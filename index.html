@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全密码生成器 V2.0</title>
+    <style>
+        /* 这里稍微优化了界面排版，让它看起来更像一个专业的工具 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; color: #333; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: inline-block; max-width: 400px; width: 100%; }
+        input[type="number"] { padding: 10px; font-size: 16px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; width: 80px; text-align: center; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px 5px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-generate { background-color: #007bff; color: white; width: 100%; }
+        .btn-generate:hover { background-color: #0056b3; }
+        .btn-copy { background-color: #6c757d; color: white; display: none; width: 100%; margin-top: 15px; }
+        .btn-copy:hover { background-color: #5a6268; }
+        #result { margin-top: 20px; font-size: 22px; font-weight: bold; color: #333; word-break: break-all; min-height: 30px; background: #e9ecef; padding: 15px; border-radius: 5px; border: 1px dashed #ccc; }
+        #strength { margin-top: 15px; font-size: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🔒 密码生成器 V2.0</h2>
+        <p style="color: #666; font-size: 14px;">增强版：支持强度检测与一键复制</p>
+        
+        <label for="length">设定密码长度: </label>
+        <input type="number" id="length" value="16" min="8" max="64">
+        <br>
+        
+        <button class="btn-generate" onclick="generatePassword()">⚡ 一键生成强密码</button>
+        
+        <div id="result">点击上方按钮生成</div>
+        <div id="strength"></div>
+        
+        <button class="btn-copy" id="copyBtn" onclick="copyPassword()">📋 复制到剪贴板</button>
+    </div>
+
+    <script>
+        // 核心逻辑 1：生成密码
+        function generatePassword() {
+            const length = document.getElementById('length').value;
+            // 扩展了特殊符号库，增强随机性
+            const allChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
+            let password = "";
+            
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * allChars.length);
+                password += allChars[randomIndex];
+            }
+            
+            // 将生成的密码显示在屏幕上
+            document.getElementById('result').innerText = password;
+            
+            // 生成密码后，让隐藏的“复制按钮”显示出来，并重置文字
+            document.getElementById('copyBtn').style.display = 'inline-block';
+            document.getElementById('copyBtn').innerText = '📋 复制到剪贴板';
+            document.getElementById('copyBtn').style.backgroundColor = '#6c757d';
+            
+            // 调用强度检测函数
+            checkStrength(password);
+        }
+
+        // 核心逻辑 2：检测密码强度 (根据长度和包含的字符种类打分)
+        function checkStrength(pwd) {
+            const strengthDiv = document.getElementById('strength');
+            let score = 0;
+            if (pwd.length > 8) score++;
+            if (pwd.length >= 12) score++;
+            if (/[A-Z]/.test(pwd)) score++; // 包含大写字母
+            if (/[0-9]/.test(pwd)) score++; // 包含数字
+            if (/[^A-Za-z0-9]/.test(pwd)) score++; // 包含符号
+
+            // 根据分数改变页面的文字和颜色
+            if (score <= 2) {
+                strengthDiv.innerHTML = "当前强度: <span style='color: #dc3545;'>弱 (建议加长或混合字符)</span>";
+            } else if (score <= 4) {
+                strengthDiv.innerHTML = "当前强度: <span style='color: #ffc107;'>中等 (可以更强)</span>";
+            } else {
+                strengthDiv.innerHTML = "当前强度: <span style='color: #28a745;'>极强 (非常安全)</span>";
+            }
+        }
+
+        // 核心逻辑 3：一键复制到剪贴板 (调用浏览器的 API)
+        function copyPassword() {
+            const pwd = document.getElementById('result').innerText;
+            if(pwd && pwd !== "点击上方按钮生成") {
+                // 这是现代网页专属的复制功能代码
+                navigator.clipboard.writeText(pwd).then(() => {
+                    const copyBtn = document.getElementById('copyBtn');
+                    copyBtn.innerText = '✅ 复制成功！';
+                    copyBtn.style.backgroundColor = '#28a745'; // 复制成功后按钮变绿
+                });
+            }
+        }
+    </script>
+
+</body>
+</html>
