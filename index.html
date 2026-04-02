@@ -3,98 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>安全密码生成器 V2.0</title>
+    <title>至尊数字安全中心 Pro</title>
     <style>
-        /* 这里稍微优化了界面排版，让它看起来更像一个专业的工具 */
-        /* https://chinweibin-maker.github.io/secure-password-gen/*/
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; color: #333; }
-        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: inline-block; max-width: 400px; width: 100%; }
-        input[type="number"] { padding: 10px; font-size: 16px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; width: 80px; text-align: center; }
-        button { padding: 10px 20px; font-size: 16px; margin: 10px 5px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-generate { background-color: #007bff; color: white; width: 100%; }
-        .btn-generate:hover { background-color: #0056b3; }
-        .btn-copy { background-color: #6c757d; color: white; display: none; width: 100%; margin-top: 15px; }
-        .btn-copy:hover { background-color: #5a6268; }
-        #result { margin-top: 20px; font-size: 22px; font-weight: bold; color: #333; word-break: break-all; min-height: 30px; background: #e9ecef; padding: 15px; border-radius: 5px; border: 1px dashed #ccc; }
-        #strength { margin-top: 15px; font-size: 15px; font-weight: bold; }
+        :root { --p: #6c5ce7; --accent: #00ffcc; --bg: #0a0a0a; --card: #161616; --up: #00ff88; --down: #ff3366; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* 顶部导航 */
+        .nav { background: var(--card); padding: 10px; display: flex; justify-content: center; gap: 20px; border-bottom: 1px solid #333; }
+        .nav-btn { padding: 10px 25px; border-radius: 12px; border: 1px solid #333; background: none; color: #888; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .nav-btn.active { background: var(--p); color: white; border-color: var(--p); box-shadow: 0 0 15px rgba(108, 92, 231, 0.4); }
+
+        /* 内容容器 */
+        .content { flex: 1; overflow: hidden; display: none; padding: 20px; }
+        .content.active { display: flex; }
+
+        /* --- 模块样式：加密终端 --- */
+        .crypto-layout { width: 100%; display: flex; gap: 20px; }
+        .sidebar { width: 300px; background: var(--card); border-radius: 20px; padding: 15px; overflow-y: auto; }
+        .chart-main { flex: 1; background: #000; border-radius: 20px; overflow: hidden; }
+        .coin-item { padding: 12px; background: #222; border-radius: 10px; margin-bottom: 10px; cursor: pointer; border: 1px solid transparent; }
+        .coin-item:hover { border-color: var(--accent); }
+
+        /* --- 模块样式：安全中心 --- */
+        .security-layout { width: 100%; max-width: 500px; margin: 0 auto; text-align: center; justify-content: center; display: flex; flex-direction: column; }
+        .pass-box { background: var(--card); padding: 30px; border-radius: 25px; border: 1px solid #333; }
+        input[type="number"] { background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 8px; width: 60px; text-align: center; }
+        .btn-gen { background: var(--p); color: white; padding: 15px; border: none; border-radius: 12px; width: 100%; margin-top: 15px; cursor: pointer; font-weight: bold; }
+        #pwd-display { background: #000; padding: 20px; border-radius: 12px; margin-top: 20px; font-family: monospace; font-size: 1.2rem; color: var(--accent); word-break: break-all; min-height: 24px; cursor: pointer; }
+
+        .up { color: var(--up); }
+        .down { color: var(--down); }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>🔒 密码生成器 V2.0</h2>
-        <p style="color: #666; font-size: 14px;">增强版：支持强度检测与一键复制</p>
-        
-        <label for="length">设定密码长度: </label>
-        <input type="number" id="length" value="16" min="8" max="64">
-        <br>
-        
-        <button class="btn-generate" onclick="generatePassword()">⚡ 一键生成强密码</button>
-        
-        <div id="result">点击上方按钮生成</div>
-        <div id="strength"></div>
-        
-        <button class="btn-copy" id="copyBtn" onclick="copyPassword()">📋 复制到剪贴板</button>
+    <div class="nav">
+        <button class="nav-btn active" onclick="switchTab('crypto', this)">📊 交易终端</button>
+        <button class="nav-btn" onclick="switchTab('security', this)">🔒 安全中心</button>
     </div>
 
+    <div id="crypto" class="content active">
+        <div class="crypto-layout">
+            <div class="sidebar" id="coin-list">正在同步实时数据...</div>
+            <div class="chart-main">
+                <div id="tradingview_widget" style="height: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="security" class="content">
+        <div class="security-layout">
+            <div class="pass-box">
+                <h2 style="margin-top:0">安全密码生成器 Pro</h2>
+                <div style="margin-bottom: 20px;">
+                    长度: <input type="number" id="pwd-len" value="16" min="8" max="64">
+                </div>
+                <button class="btn-gen" onclick="generateSecurePwd()">⚡ 生成并自动复制</button>
+                <div id="pwd-display" onclick="copyPwd()">点击上方生成</div>
+                <div id="strength-hint" style="font-size: 0.8rem; margin-top: 10px; color: #888;">强度: -</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // 核心逻辑 1：生成密码
-        function generatePassword() {
-            const length = document.getElementById('length').value;
-            // 扩展了特殊符号库，增强随机性
-            const allChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
-            let password = "";
-            
-            for (let i = 0; i < length; i++) {
-                const randomIndex = Math.floor(Math.random() * allChars.length);
-                password += allChars[randomIndex];
-            }
-            
-            // 将生成的密码显示在屏幕上
-            document.getElementById('result').innerText = password;
-            
-            // 生成密码后，让隐藏的“复制按钮”显示出来，并重置文字
-            document.getElementById('copyBtn').style.display = 'inline-block';
-            document.getElementById('copyBtn').innerText = '📋 复制到剪贴板';
-            document.getElementById('copyBtn').style.backgroundColor = '#6c757d';
-            
-            // 调用强度检测函数
-            checkStrength(password);
+        // 1. 切换逻辑
+        function switchTab(id, btn) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(id === 'crypto') initChart('BTC');
         }
 
-        // 核心逻辑 2：检测密码强度 (根据长度和包含的字符种类打分)
-        function checkStrength(pwd) {
-            const strengthDiv = document.getElementById('strength');
-            let score = 0;
-            if (pwd.length > 8) score++;
-            if (pwd.length >= 12) score++;
-            if (/[A-Z]/.test(pwd)) score++; // 包含大写字母
-            if (/[0-9]/.test(pwd)) score++; // 包含数字
-            if (/[^A-Za-z0-9]/.test(pwd)) score++; // 包含符号
-
-            // 根据分数改变页面的文字和颜色
-            if (score <= 2) {
-                strengthDiv.innerHTML = "当前强度: <span style='color: #dc3545;'>弱 (建议加长或混合字符)</span>";
-            } else if (score <= 4) {
-                strengthDiv.innerHTML = "当前强度: <span style='color: #ffc107;'>中等 (可以更强)</span>";
-            } else {
-                strengthDiv.innerHTML = "当前强度: <span style='color: #28a745;'>极强 (非常安全)</span>";
-            }
+        // 2. 加密终端逻辑
+        function initChart(symbol) {
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": "BINANCE:" + symbol + "USDT",
+                "interval": "60",
+                "theme": "dark",
+                "container_id": "tradingview_widget"
+            });
         }
 
-        // 核心逻辑 3：一键复制到剪贴板 (调用浏览器的 API)
-        function copyPassword() {
-            const pwd = document.getElementById('result').innerText;
-            if(pwd && pwd !== "点击上方按钮生成") {
-                // 这是现代网页专属的复制功能代码
-                navigator.clipboard.writeText(pwd).then(() => {
-                    const copyBtn = document.getElementById('copyBtn');
-                    copyBtn.innerText = '✅ 复制成功！';
-                    copyBtn.style.backgroundColor = '#28a745'; // 复制成功后按钮变绿
+        async function fetchPrices() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,dogecoin&vs_currencies=usd&include_24hr_change=true');
+                const data = await res.json();
+                const list = document.getElementById('coin-list');
+                list.innerHTML = '';
+                
+                const coins = [['bitcoin','BTC'], ['ethereum','ETH'], ['solana','SOL'], ['binancecoin','BNB'], ['dogecoin','DOGE']];
+                coins.forEach(([id, sym]) => {
+                    const price = data[id].usd;
+                    const change = data[id].usd_24h_change.toFixed(2);
+                    list.innerHTML += `
+                        <div class="coin-item" onclick="initChart('${sym}')">
+                            <div style="font-weight:bold">${sym}/USD</div>
+                            <div style="font-family:monospace; font-size:1.1rem">$${price.toLocaleString()}</div>
+                            <div class="${change >= 0 ? 'up' : 'down'}" style="font-size:0.8rem">${change}%</div>
+                        </div>
+                    `;
                 });
+            } catch (e) { console.error("API Limit"); }
+        }
+
+        // 3. 安全中心逻辑 (CSPRNG 算法)
+        function generateSecurePwd() {
+            const len = document.getElementById('pwd-len').value;
+            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+            let ret = "";
+            const crypt = window.crypto.getRandomValues(new Uint32Array(len));
+            for(let i=0; i<len; i++) ret += charset[crypt[i] % charset.length];
+            
+            const display = document.getElementById('pwd-display');
+            display.innerText = ret;
+            display.style.color = "var(--accent)";
+            navigator.clipboard.writeText(ret);
+            document.getElementById('strength-hint').innerText = "强度: 极高 (已自动复制)";
+        }
+
+        function copyPwd() {
+            const txt = document.getElementById('pwd-display').innerText;
+            if(txt !== "点击上方生成") {
+                navigator.clipboard.writeText(txt);
+                alert("已复制！");
             }
         }
-    </script>
 
+        // 启动
+        fetchPrices();
+        initChart('BTC');
+        setInterval(fetchPrices, 60000);
+    </script>
 </body>
 </html>
